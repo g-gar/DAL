@@ -1,56 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DAL;
 using DAL.definition;
-using DataAccessLayer.dto;
 using Drew.Util;
 using Microsoft.Extensions.Logging;
 using Model;
 
-namespace DataAccessLayer.dao{
-    public class ClassCodeDao : AbstractDao<ClassCode, int>{
+namespace db.dao{
+    public class ClassCodeDao : AbstractDao<ClassCode, long>{
 
         private readonly ILogger logger;
-        
+
         public ClassCodeDao(IDatabaseConnectionPool databaseConnectionPool, ILogger logger) : base(databaseConnectionPool)
         {
             this.logger = logger;
         }
 
-        public override ClassCode create(ClassCode entity)
+        public override Task<ClassCode> create(ClassCode entity)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override ClassCode update(ClassCode entity)
+        public override Task<ClassCode> update(ClassCode entity)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override ClassCode delete(ClassCode entity)
+        public override Task<bool> delete(ClassCode entity)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override ClassCode findById(int id)
+        public override Task<ClassCode> findById(long id)
         {
-            return databaseConnectionPool.execute<ClassCodeDto, ClassCode>(command =>
-            {
-                command.CommandText = String.Format("select id, name from class_codes where id = {0}", id);
-                return new ClassCodeDto(command.ExecuteReader(CommandBehavior.SingleRow));
-            }).Result;
+            throw new System.NotImplementedException();
         }
 
-        public override IEnumerable<ClassCode> findAll()
+        public override Task<IEnumerable<ClassCode>> findAll()
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override IEnumerable<ClassCode> find(params Filter[] filters)
+        public override Task<IEnumerable<ClassCode>> find(Filter filter)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
     }
 }

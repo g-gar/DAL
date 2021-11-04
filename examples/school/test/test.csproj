@@ -17,10 +17,4 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0-rc.2.21480.5" />
     </ItemGroup>
 
-    <ItemGroup>
-      <None Update="school.sqlite">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-    </ItemGroup>
-
 </Project>

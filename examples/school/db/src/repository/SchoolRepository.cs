@@ -1,23 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.Data.Common;
+using System.Threading.Tasks;
 using DAL.definition;
+using db.dto;
 using Microsoft.Extensions.Logging;
 using Model;
 
-namespace DataAccessLayer.repository{
-    public class SchoolRepository : IRepository<School>, ISchoolRepository {
+namespace db.repository{
+    public class SchoolRepository : IRepository<School>, ISchoolRepository{
 
+        private readonly IDatabaseConnectionPool connectionPool;
         private readonly ILogger logger;
         
-        private readonly IDao<ClassCode, int> classCodeDao;
-        private readonly IDao<Class, int> classDao;
-        private readonly IDao<Principal, int> principalDao;
-        private readonly IDao<School, int> schoolDao;
-        private readonly IDao<Student, int> studentDao;
-        private readonly IDao<Subject, int> subjectDao;
-        private readonly IDao<Teacher, int> teacherDao;
+        private readonly IDao<ClassCode, long> classCodeDao;
+        private readonly IDao<Class, long> classDao;
+        private readonly IDao<Principal, long> principalDao;
+        private readonly IDao<School, long> schoolDao;
+        private readonly IDao<Student, long> studentDao;
+        private readonly IDao<Subject, long> subjectDao;
+        private readonly IDao<Teacher, long> teacherDao;
 
-        public SchoolRepository(ILogger logger, IDao<ClassCode, int> classCodeDao, IDao<Class, int> classDao, IDao<Principal, int> principalDao, IDao<School, int> schoolDao, IDao<Student, int> studentDao, IDao<Subject, int> subjectDao, IDao<Teacher, int> teacherDao)
+        public SchoolRepository(IDatabaseConnectionPool connectionPool, ILogger logger, IDao<ClassCode, long> classCodeDao, IDao<Class, long> classDao, IDao<Principal, long> principalDao, IDao<School, long> schoolDao, IDao<Student, long> studentDao, IDao<Subject, long> subjectDao, IDao<Teacher, long> teacherDao)
         {
+            this.connectionPool = connectionPool;
             this.logger = logger;
             this.classCodeDao = classCodeDao;
             this.classDao = classDao;
@@ -28,32 +33,39 @@ namespace DataAccessLayer.repository{
             this.teacherDao = teacherDao;
         }
 
-        public IEnumerable<Teacher> getActiveTeachers()
+        public async Task<IEnumerable<Teacher>> getActiveTeachers()
+        {
+            return await connectionPool.execute<IEnumerable<Teacher>>( command =>
+            {
+                IList<Teacher> result = new List<Teacher>();
+                command.CommandText = "select t.id from classes c left join teachers t on c.teacher_id = t.id";
+                DbDataReader reader = command.ExecuteReader();
+                while (reader.Read()) result.Add(teacherDao.findById(reader.GetInt64(0)).Result); //TODO: make asynchronous
+                return result;
+            });
+        }
+
+        public Task<IEnumerable<Teacher>> getInactiveTeachers()
         {
             throw new System.NotImplementedException();
         }
 
-        public IEnumerable<Teacher> getInactiveTeachers()
+        public Task<double> computeTeacherEfficiency(Teacher teacher)
         {
             throw new System.NotImplementedException();
         }
 
-        public double computeTeacherEfficiency(Teacher teacher)
+        public Task<double> computeClassApprobationRate(Class @class)
         {
             throw new System.NotImplementedException();
         }
 
-        public double computeClassApprobationRate(Class @class)
+        public Task<double> computeSubjectApprobationRate(Class @class, Subject subject)
         {
             throw new System.NotImplementedException();
         }
 
-        public double computeSubjectApprobationRate(Class @class, Subject subject)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public Dictionary<bool, Subject> getResume(Student student, Class Class)
+        public Task<Dictionary<bool, Subject>> getResume(Student student, Class Class)
         {
             throw new System.NotImplementedException();
         }

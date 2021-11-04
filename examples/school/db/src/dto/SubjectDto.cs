@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace DataAccessLayer.dto{
+namespace db.dto{
     public class SubjectDto{
         public int id { get; set; }
         public string name { get; set; }

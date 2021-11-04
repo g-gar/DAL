@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Data.Common;
 
-namespace DataAccessLayer.dto{
+namespace db.dto{
     public class ClassDto{
-        public int? id { get; set; }
-        public int? classCodeId { get; set; }
+        public long? id { get; set; }
+        public long? classCodeId { get; set; }
         public string classCodeName { get; set; }
-        public int? teacherId { get; set; }
+        public long? teacherId { get; set; }
         public string teacherName { get; set; }
 
-        public ClassDto(int? id, int? classCodeId, string classCodeName, int? teacherId, string teacherName)
+        public ClassDto()
+        {
+        }
+
+        public ClassDto(long? id, long? classCodeId, string classCodeName, long? teacherId, string teacherName)
         {
             this.id = id;
             this.classCodeId = classCodeId;
@@ -23,10 +27,11 @@ namespace DataAccessLayer.dto{
         {
             if (reader.Read())
             {
-                this.id = (int) reader.GetInt64(0);
-                this.classCodeId = (int) reader.GetInt64(1);
+                this.id = reader.GetInt64(0);
+                this.classCodeId = reader.GetInt64(1);
                 this.classCodeName = reader.GetString(2);
-                this.teacherId = (int) reader.GetInt64(3);
+                this.teacherId = reader.GetInt64(3);
+                this.teacherId = reader.GetInt64(3);
                 this.teacherName = reader.GetString(4);
             }
             else

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.IO;
 using System.Text;
 
 namespace Drew.Util
@@ -9,8 +10,18 @@ namespace Drew.Util
 	/// queries in the form of 'Where' clauses.
 	/// </summary>
 	[Serializable]
-	public class Filter
-	{
+	public class Filter{
+		public static readonly string EQUAL = "=";
+		public static readonly string NEQUAL = "<>";
+		public static readonly string BT = ">";
+		public static readonly string BEQ = ">=";
+		public static readonly string LT = "<";
+		public static readonly string LEQ = "<=";
+		public static readonly string LIKE = "LIKE";
+		public static readonly string WHERE = "WHERE";
+		public static readonly string AND = "AND";
+		public static readonly string OR = "OR";
+		
 		#region CreateEmpty
 
 		/// <summary>
@@ -27,7 +38,7 @@ namespace Drew.Util
 		/// <summary>
 		/// The default date format string used for SQL commands.
 		/// </summary>
-		const string DateFormat = "dd MMM yyyy HH:mm:ss";
+		public static string DateFormat = "dd MMM yyyy HH:mm:ss";
 
 		ConditionNode _topNode;
 
@@ -62,7 +73,7 @@ namespace Drew.Util
 		private ConditionNode CreateEqualToCondition(string columnName, object equalTo)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(equalTo), "=");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(equalTo), $"{EQUAL}");
 			return condition;
 		}
 
@@ -92,7 +103,7 @@ namespace Drew.Util
 		private ConditionNode CreateNotEqualToCondition(string columnName, object notEqualTo)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(notEqualTo), "<>");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(notEqualTo), $"{NEQUAL}");
 			return condition;
 		}
 
@@ -120,7 +131,7 @@ namespace Drew.Util
 		private ConditionNode CreateGreaterThanCondition(string columnName, object greaterThan)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(greaterThan), ">");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(greaterThan), $"{BT}");
 			return condition;
 		}
 
@@ -148,7 +159,7 @@ namespace Drew.Util
 		private ConditionNode CreateGreaterThanOrEqualToCondition(string columnName, object greaterThanOrEqualTo)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(greaterThanOrEqualTo), ">=");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(greaterThanOrEqualTo), $"{BEQ}");
 			return condition;
 		}
 
@@ -177,7 +188,7 @@ namespace Drew.Util
 		private ConditionNode CreateLessThanCondition(string columnName, object lessThan)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(lessThan), "<");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(lessThan), $"{LT}");
 			return condition;
 		}
 
@@ -205,7 +216,7 @@ namespace Drew.Util
 		private ConditionNode CreateLessThanOrEqualToCondition(string columnName, object lessThanOrEqualTo)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(lessThanOrEqualTo), "<=");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(lessThanOrEqualTo), $"{LEQ}");
 			return condition;
 		}
 
@@ -233,7 +244,7 @@ namespace Drew.Util
 		private ConditionNode CreateLikeCondition(string columnName, string likePattern)
 		{
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(likePattern), " Like ");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(likePattern), $" {LIKE} ");
 			return condition;
 		}
 
@@ -255,7 +266,7 @@ namespace Drew.Util
 		{
 			string likePattern = string.Format("%{0}%", subString);
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(likePattern), " Like ");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(likePattern), $" {LIKE} ");
 			return condition;
 		}
 
@@ -277,7 +288,7 @@ namespace Drew.Util
 		{
 			string likePattern = string.Format("{0}%", prefix);
 			ConditionNode condition 
-				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(likePattern), " Like ");
+				= new OperatorNode(new ColumnNameNode(columnName), new ValueNode(likePattern), $" {LIKE} ");
 			return condition;
 		}
 
@@ -362,7 +373,7 @@ namespace Drew.Util
 				return string.Empty;
 
 			StringBuilder sb = new StringBuilder();
-			sb.Append("Where ");
+			sb.Append($"{WHERE} ");
 			sb.Append(GetExpressionString());
 			return sb.ToString();
 		}
@@ -552,9 +563,9 @@ namespace Drew.Util
 				get
 				{
 					if (_operator==LogicalOperator.AND)
-						return "And";
+						return $"{AND}";
 					else if (_operator==LogicalOperator.OR)
-						return "Or";
+						return $"{OR}";
 					else
 						throw new Exception("Unsupported logical operator: " + _operator);
 				}
@@ -605,11 +616,6 @@ namespace Drew.Util
 
 		class ValueNode : LiteralNode
 		{
-			/// <summary>
-			/// The default date format string used for SQL commands.
-			/// </summary>
-			const string DateFormat = "dd MMM yyyy HH:mm:ss";
-			
 			object _value;
 			public ValueNode(object val)
 			{
@@ -674,9 +680,6 @@ namespace Drew.Util
 		{
 			return GetExpressionString().GetHashCode();
 		}
-
-
-
 		#endregion
 	}
 }

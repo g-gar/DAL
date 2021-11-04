@@ -1,35 +1,36 @@
 ﻿using AutoMapper;
 using DAL.definition;
-using DataAccessLayer.dao;
-using DataAccessLayer.dto;
-using DataAccessLayer.repository;
+using db.dao;
+using db.dto;
+using db.repository;
 using Microsoft.Extensions.DependencyInjection;
 using Model;
 
-namespace DataAccessLayer{
+namespace db{
     public static class DataAccessLayerModule{
         public static IServiceCollection loadDataAccessLayerModule(this IServiceCollection services)
         {
             return services
-                .AddSingleton<IDao<ClassCode, int>, ClassCodeDao>()
-                .AddSingleton<IDao<Class, int>, ClassDao>()
-                .AddSingleton<IDao<Principal, int>, PrincipalDao>()
-                .AddSingleton<IDao<School, int>, SchoolDao>()
-                .AddSingleton<IDao<Student, int>, StudentDao>()
-                .AddSingleton<IDao<Subject, int>, SubjectDao>()
-                .AddSingleton<IDao<Teacher, int>, TeacherDao>()
-                .AddSingleton<IRepository<School>, SchoolRepository>()
+                .AddSingleton<IDao<ClassCode, long>, ClassCodeDao>()
+                .AddSingleton<IDao<Class, long>, ClassDao>()
+                .AddSingleton<IDao<Principal, long>, PrincipalDao>()
+                .AddSingleton<IDao<School, long>, SchoolDao>()
+                .AddSingleton<IDao<Student, long>, StudentDao>()
+                .AddSingleton<IDao<Subject, long>, SubjectDao>()
+                .AddSingleton<IDao<Teacher, long>, TeacherDao>()
+                .AddSingleton<ISchoolRepository, SchoolRepository>()
+                .AddSingleton<IRepository<School>>(provider => (IRepository<School>) provider.GetService<ISchoolRepository>())
                 .AddSingleton<IConfigurationProvider>(new MapperConfiguration(cfg =>
                 {
                     cfg.CreateMap<ClassCodeDto, ClassCode>();
                     cfg.CreateMap<ClassDto, Class>()
                         .ForMember(
                             c => c.code, 
-                            opt => opt.MapFrom(src => new ClassCodeDto(src.classCodeId, src.classCodeName))
+                            opt => opt.MapFrom(src => new ClassCode(src.classCodeId, src.classCodeName))
                         )
                         .ForMember(
                             c => c.teacher,
-                            opt => opt.MapFrom(src => new TeacherDto(src.teacherId, src.teacherName))
+                            opt => opt.MapFrom(src => new Teacher(src.teacherId, src.teacherName))
                         )
                         ;
                     cfg.CreateMap<PrincipalDto, Principal>();

@@ -1,7 +1,7 @@
 ﻿namespace Model{
     public class ClassCode{
         
-        public int? id { get; set; }
+        public long? id { get; set; }
         public string name { get; set; }
 
         public ClassCode()
@@ -13,7 +13,7 @@
             this.name = name;
         }
 
-        public ClassCode(int? id, string name)
+        public ClassCode(long? id, string name)
         {
             this.id = id;
             this.name = name;

@@ -6,7 +6,9 @@ using AutoMapper;
 using DAL;
 using DAL.definition;
 using DAL.implementation;
-using DataAccessLayer;
+using db;
+using db.repository;
+using Drew.Util;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +16,7 @@ using Model;
 
 namespace test{
     class Program{
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             IServiceProvider provider = new ServiceCollection()
                     .AddLogging(builder => builder.AddConsole())
@@ -23,21 +25,32 @@ namespace test{
                     .loadDataAccessLayerModule()
                     .AddTransient<IMapper>(provider => provider.GetService<IConfigurationProvider>().CreateMapper())
                     .AddSingleton<IDataMapper, AutoMapperDataMapper>()
-                    .AddSingleton<IDatabaseConnectionPoolConfiguration>(new DatabaseConnectionPoolConfiguration(10))
-                    .AddSingleton<Func<DbConnection>>(() => new SqliteConnection("Data Source=school.sqlite;"))
+                    .AddSingleton<IDatabaseConnectionPoolConfiguration>(new DatabaseConnectionPoolConfiguration(10, $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/Desktop/school.sqlite"))
+                    .AddSingleton<Func<IDatabaseConnectionPoolConfiguration, DbConnection>>(config => new SqliteConnection($"Data Source={config.path};"))
                     .BuildServiceProvider();
             
-            IDao<Teacher, int> dao = provider.GetService<IDao<Teacher, int>>();
-            Teacher teacher = dao.create(new Teacher($"teacher{new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()}", new List<Subject>()
+            // IDao<Teacher, long> dao = provider.GetService<IDao<Teacher, long>>();
+            // Teacher teacher = await dao.create(new Teacher($"teacher{new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds()}", new List<Subject>()
+            // {
+            //     new Subject(null, "subject2")
+            // }));
+            // IDao<Class, long> classDao = provider.GetService<IDao<Class, long>>();
+            // foreach (Class c in await classDao.findAll())
+            // {
+            //     Console.WriteLine($"{c.id} {c.code.id} {c.code.name} {c.teacher.id} {c.teacher.name}");
+            // }
+            //
+            // foreach (Teacher t in await dao.findAll())
+            // {
+            //     Console.WriteLine($"{t.id} {t.name}");
+            // }
+
+            ISchoolRepository repository = provider.GetService<ISchoolRepository>();
+            foreach (Teacher t in await repository.getActiveTeachers())
             {
-                new Subject(null, "subject2")
-            }));
-            IDao<Class, int> classDao = provider.GetService<IDao<Class, int>>();
-            IEnumerable<Class> classes = classDao.findAll();
-            foreach (Class c in classes)
-            {
-                Console.WriteLine($"{c.id} {c.code.id} {c.code.name} {c.teacher.id} {c.teacher.name}");
+                Console.WriteLine($"{t.id} {t.name}");
             }
+
             int a = 0;
         }
     }

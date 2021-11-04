@@ -15,14 +15,14 @@ namespace DAL.implementation{
         private readonly Dictionary<int, DbConnection> connections;
         // TODO: add a queue for jobs
 
-        public DefaultDatabaseConnectionPool(IDatabaseConnectionPoolConfiguration configuration, IDataMapper mapper, Func<DbConnection> fn)
+        public DefaultDatabaseConnectionPool(IDatabaseConnectionPoolConfiguration configuration, IDataMapper mapper, Func<IDatabaseConnectionPoolConfiguration, DbConnection> fn)
         {
             this.configuration = configuration;
             this.mapper = mapper;
             this.connections = new Dictionary<int, DbConnection>();
             Enumerable.Range(0, configuration.amount - 1).ForAll(n =>
             {
-                connections[n] = fn.Invoke();
+                connections[n] = fn.Invoke(configuration);
                 connections[n].Open();
             });
         }
@@ -31,6 +31,12 @@ namespace DAL.implementation{
         {
             DbConnection connection = await this.get();
             return await Task.Run<R>(()=> mapper.get<T, R>(fn.Invoke(connection.CreateCommand())));
+        }
+        
+        public async Task<R> execute<R>(Func<DbCommand, R> fn)
+        {
+            DbConnection connection = await this.get();
+            return await Task.Run<R>(()=> fn.Invoke(connection.CreateCommand()));
         }
 
         public async Task execute(Action<DbCommand> fn)

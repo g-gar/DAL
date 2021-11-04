@@ -2,7 +2,7 @@
 
 namespace Model{
     public class Class{
-        public int id { get; set; }
+        public long id { get; set; }
         public ClassCode code { get; set; }
         public Teacher teacher { get; set; }
         public IList<Student> students { get; set; }
@@ -12,7 +12,7 @@ namespace Model{
         {
         }
 
-        public Class(int id, ClassCode code, Teacher teacher, IList<Student> students, IList<Subject> subjects)
+        public Class(long id, ClassCode code, Teacher teacher, IList<Student> students, IList<Subject> subjects)
         {
             this.id = id;
             this.code = code;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Data.Common;
 
-namespace DataAccessLayer.dto{
+namespace db.dto{
     public class SchoolDto{
         public int? id { get; set; }
         public string name { get; set; }

@@ -13,16 +13,16 @@ namespace DAL {
             this.databaseConnectionPool = databaseConnectionPool;
         }
 
-        public abstract T create(T entity);
+        public abstract Task<T> create(T entity);
 
-        public abstract T update(T entity);
+        public abstract Task<T> update(T entity);
 
-        public abstract T delete(T entity);
+        public abstract Task<bool> delete(T entity);
 
-        public abstract T findById(ID id);
+        public abstract Task<T> findById(ID id);
 
-        public abstract IEnumerable<T> findAll();
+        public abstract Task<IEnumerable<T>> findAll();
 
-        public abstract IEnumerable<T> find(params Filter[] filters);
+        public abstract Task<IEnumerable<T>> find(Filter filter);
     }
 }

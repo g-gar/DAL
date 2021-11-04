@@ -2,16 +2,17 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using DAL;
 using DAL.definition;
-using DataAccessLayer.dto;
+using db.dto;
 using Drew.Util;
 using Microsoft.Extensions.Logging;
 using Model;
 
-namespace DataAccessLayer.dao{
-    public class ClassDao : AbstractDao<Class, int>{
+namespace db.dao{
+    public class ClassDao : AbstractDao<Class, long>{
 
         private readonly ILogger Logger;
         
@@ -20,67 +21,62 @@ namespace DataAccessLayer.dao{
             Logger = logger;
         }
 
-        public override Class create(Class entity)
+        public override async Task<Class> create(Class entity)
         {
-            throw new NotImplementedException();
-        }
-
-        public override Class update(Class entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Class delete(Class entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Class findById(int id)
-        {
-            return databaseConnectionPool.execute<ClassDto, Class>(command =>
+            return await await await databaseConnectionPool.execute(command =>
             {
-                command.CommandText = String.Format(
-                    "select c.id, cc.id, cc.name, t.id, t.name from classes c where id = {0} " +
-                    "left join class_codes cc on cc.id = c.class_code_id " +
-                    "left join teachers t on t.id = c.teacher_id", id
-                );
-                return new ClassDto(command.ExecuteReader(CommandBehavior.SingleRow));
-            }).Result;
+                command.CommandText = $"insert into classes(class_code_id, teacher_id) values ('{entity.code.id}', '{entity.teacher.id}'); select last_insert_rowid();";
+                return (long?) command.ExecuteScalar();
+            }).ContinueWith(async task => (await task).HasValue ? findById((await task).Value) : throw new NullReferenceException());
         }
 
-        public override IEnumerable<Class> findAll()
+        public override async Task<Class> update(Class entity)
         {
-            return databaseConnectionPool.execute<IEnumerable<ClassDto>, IEnumerable<Class>>(command =>
+            return await await await databaseConnectionPool.execute(command =>
             {
-                IList<ClassDto> result = new List<ClassDto>();
+                command.CommandText = $"update classes set class_code_id = '{entity.code.id}', teacher_id = '{entity.teacher.id}' where classes.id = '{entity.id}'; select last_insert_rowid();";
+                return (long?) command.ExecuteScalar();
+            }).ContinueWith(async task => (await task).HasValue ? findById((await task).Value) : throw new NullReferenceException());throw new NotImplementedException();
+        }
+
+        public override async Task<bool> delete(Class entity)
+        {
+            return await await databaseConnectionPool.execute(command =>
+            {
+                command.CommandText = $"delete from classes where id = '{entity.id}';";
+                return command.ExecuteNonQuery();
+            }).ContinueWith(async task => await task > 0);
+        }
+
+        public override async Task<Class> findById(long id)
+        {
+            return await databaseConnectionPool.execute<ClassDto, Class>(command =>
+            {
                 command.CommandText = String.Format(
                     "select c.id, cc.id, cc.name, t.id, t.name from classes c " +
                     "left join class_codes cc on cc.id = c.class_code_id " +
-                    "left join teachers t on t.id = c.teacher_id"
+                    "left join teachers t on t.id = c.teacher_id " +
+                    "where c.id = {0}", id
                 );
-                DbDataReader reader = command.ExecuteReader(CommandBehavior.Default);
-
-                bool end = false;
-                while (!end)
-                {
-                    try
-                    {   
-                        ClassDto c = new ClassDto(reader);
-                        result.Add(c);
-                    }
-                    catch (NullReferenceException)
-                    {
-                        end = true;
-                    }
-                }
-
-                return result;
-            }).Result;
+                return new ClassDto(command.ExecuteReader(CommandBehavior.SingleRow));
+            });
         }
 
-        public override IEnumerable<Class> find(params Filter[] filters)
+        public override async Task<IEnumerable<Class>> findAll()
         {
-            throw new NotImplementedException();
+            return await find(Filter.CreateEmpty());
+        }
+
+        public override async Task<IEnumerable<Class>> find(Filter filter)
+        {
+            return await databaseConnectionPool.execute<IEnumerable<Class>>(command =>
+            {
+                IList<Class> result = new List<Class>();
+                command.CommandText = $"SELECT id FROM classes {(filter.HasExpression?$"WHERE {filter.GetExpressionString()}":"")}";
+                DbDataReader reader = command.ExecuteReader(CommandBehavior.SingleResult);
+                while (reader.Read()) result.Add(findById(reader.GetInt64(0)).Result);
+                return result;
+            });
         }
     }
 }

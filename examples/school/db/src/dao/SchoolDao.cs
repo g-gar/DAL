@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using DAL;
 using DAL.definition;
@@ -7,44 +6,44 @@ using Drew.Util;
 using Microsoft.Extensions.Logging;
 using Model;
 
-namespace DataAccessLayer.dao{
-    public class SchoolDao : AbstractDao<School, int>{
+namespace db.dao{
+    public class SchoolDao : AbstractDao<School, long>{
 
         private readonly ILogger logger;
-        
+
         public SchoolDao(IDatabaseConnectionPool databaseConnectionPool, ILogger logger) : base(databaseConnectionPool)
         {
             this.logger = logger;
         }
 
-        public override School create(School entity)
+        public override Task<School> create(School entity)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override School update(School entity)
+        public override Task<School> update(School entity)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override School delete(School entity)
+        public override Task<bool> delete(School entity)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override School findById(int id)
+        public override Task<School> findById(long id)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override IEnumerable<School> findAll()
+        public override Task<IEnumerable<School>> findAll()
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
 
-        public override IEnumerable<School> find(params Filter[] filters)
+        public override Task<IEnumerable<School>> find(Filter filter)
         {
-            throw new NotImplementedException();
+            throw new System.NotImplementedException();
         }
     }
 }

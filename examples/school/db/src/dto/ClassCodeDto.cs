@@ -1,15 +1,15 @@
 ﻿using System.Data.Common;
 
-namespace DataAccessLayer.dto{
+namespace db.dto{
     public class ClassCodeDto{
-        public int? id { get; set; }
+        public long? id { get; set; }
         public string name { get; set; }
 
         public ClassCodeDto()
         {
         }
 
-        public ClassCodeDto(int? id, string name)
+        public ClassCodeDto(long? id, string name)
         {
             this.id = id;
             this.name = name;
@@ -19,7 +19,7 @@ namespace DataAccessLayer.dto{
         {
             if (reader.Read())
             {
-                this.id = (int) reader.GetInt64(0);
+                this.id = reader.GetInt64(0);
                 this.name = reader.GetString(1);
             }
         }

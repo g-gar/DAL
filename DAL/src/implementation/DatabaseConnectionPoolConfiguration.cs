@@ -1,12 +1,15 @@
-﻿using DAL.definition;
+﻿using System;
+using DAL.definition;
 
 namespace DAL.implementation{
     public class DatabaseConnectionPoolConfiguration : IDatabaseConnectionPoolConfiguration{
         public int amount { get; }
-        
-        public DatabaseConnectionPoolConfiguration(int amount)
+        public string path { get; }
+
+        public DatabaseConnectionPoolConfiguration(int amount, string path)
         {
             this.amount = amount;
+            this.path = path;
         }
     }
 }

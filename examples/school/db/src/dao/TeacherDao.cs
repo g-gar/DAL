@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using DAL;
 using DAL.definition;
-using DataAccessLayer.dto;
+using db.dto;
 using Drew.Util;
 using Microsoft.Extensions.Logging;
 using Model;
 
-namespace DataAccessLayer.dao{
-    public class TeacherDao : AbstractDao<Teacher, int>{
+namespace db.dao{
+    public class TeacherDao : AbstractDao<Teacher, long>{
 
         private readonly ILogger logger;
 
@@ -19,49 +21,57 @@ namespace DataAccessLayer.dao{
             this.logger = logger;
         }
 
-        public override Teacher create(Teacher entity)
+        public override async Task<Teacher> create(Teacher entity)
         {
-            return databaseConnectionPool.execute<TeacherDto, Teacher>(command =>
+            return await await await databaseConnectionPool.execute(command =>
             {
-                TeacherDto result = default(TeacherDto);
-                command.CommandText = String.Format("insert into teachers(name) values ('{0}'); select last_insert_rowid();", entity.name);
-                long? id = (long?) command.ExecuteScalar();
-                if (id.HasValue)
-                {
-                    command.CommandText = String.Format("select id, name from teachers where id = {0}", id);
-                    result = new TeacherDto(command.ExecuteReader(CommandBehavior.SingleRow));
-                } // TODO: throw exception?
-                return result;
-            }).Result;
+                command.CommandText = $"insert into teachers(name) values ('{entity.name}'); select last_insert_rowid();";
+                return (long?) command.ExecuteScalar();
+            }).ContinueWith(async task => (await task).HasValue ? findById((await task).Value) : throw new NullReferenceException());
         }
 
-        public override Teacher update(Teacher entity)
+        public override async Task<Teacher> update(Teacher entity)
         {
-            throw new NotImplementedException();
-        }
-
-        public override Teacher delete(Teacher entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Teacher findById(int id)
-        {
-            return databaseConnectionPool.execute<TeacherDto, Teacher>(command =>
+            return await await await databaseConnectionPool.execute(command =>
             {
-                command.CommandText = String.Format("select id, name from teachers where id = {0}", id);
+                command.CommandText = $"update teachers set name = '{entity.name}' where id = '{entity.id}';";
+                return command.ExecuteNonQuery();
+            }).ContinueWith(async task => await task > 0 ? findById(await task) : throw new NullReferenceException());
+        }
+
+        public override async Task<bool> delete(Teacher entity)
+        {
+            return await await databaseConnectionPool.execute(command =>
+            {
+                command.CommandText = $"delete from teachers where id = '{entity.id}';";
+                return command.ExecuteNonQuery();
+            }).ContinueWith(async task => await task > 0);
+        }
+
+        public override async Task<Teacher> findById(long id)
+        {
+            return await databaseConnectionPool.execute<TeacherDto, Teacher>(command =>
+            {
+                command.CommandText = $"select id, name from teachers where id = {id}";
                 return new TeacherDto(command.ExecuteReader(CommandBehavior.SingleRow));
-            }).Result;
+            });
         }
 
-        public override IEnumerable<Teacher> findAll()
+        public override async Task<IEnumerable<Teacher>> findAll()
         {
-            throw new NotImplementedException();
+            return await find(Filter.CreateEmpty());
         }
 
-        public override IEnumerable<Teacher> find(params Filter[] filters)
+        public override async Task<IEnumerable<Teacher>> find(Filter filter)
         {
-            throw new NotImplementedException();
+            return await databaseConnectionPool.execute<IEnumerable<Teacher>>(command =>
+            {
+                IList<Teacher> result = new List<Teacher>();
+                command.CommandText = $"SELECT id FROM teachers {(filter.HasExpression?$"WHERE {filter.GetExpressionString()}":"")}";
+                DbDataReader reader = command.ExecuteReader(CommandBehavior.SingleResult);
+                while (reader.Read()) result.Add(findById(reader.GetInt64(0)).Result);
+                return result;
+            });
         }
     }
 }

@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Model;
 
-namespace DataAccessLayer.repository{
+namespace db.repository{
     public interface ISchoolRepository{
         
-        public IEnumerable<Teacher> getActiveTeachers();
-        public IEnumerable<Teacher> getInactiveTeachers();
-        public double computeTeacherEfficiency(Teacher teacher);
-        public double computeClassApprobationRate(Class @class);
-        public double computeSubjectApprobationRate(Class @class, Subject subject);
-        public Dictionary<bool, Subject> getResume(Student student, Class @Class);
+        public Task<IEnumerable<Teacher>> getActiveTeachers();
+        public Task<IEnumerable<Teacher>> getInactiveTeachers();
+        public Task<double> computeTeacherEfficiency(Teacher teacher);
+        public Task<double> computeClassApprobationRate(Class @class);
+        public Task<double> computeSubjectApprobationRate(Class @class, Subject subject);
+        public Task<Dictionary<bool, Subject>> getResume(Student student, Class @Class);
 
     }
 }
