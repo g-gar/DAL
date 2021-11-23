@@ -10,7 +10,5 @@ namespace DAL.definition {
         public Task<R> execute<R>(Func<DbCommand, R> fn);
         public Task execute(Action<DbCommand> fn);
 
-        // public Task<DbConnection> get();
-
     }
 }

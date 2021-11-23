@@ -8,21 +8,21 @@ using AutoMapper.Internal;
 using DAL.definition;
 
 namespace DAL.implementation{
-    public class DefaultDatabaseConnectionPool : IDatabaseConnectionPool{
+    public class DefaultDatabaseConnectionPool : IDatabaseConnectionPool
+    {
+        private bool _disposed = false;
 
-        private readonly IDatabaseConnectionPoolConfiguration configuration;
         private readonly IDataMapper mapper;
         private readonly Dictionary<int, DbConnection> connections;
-        // TODO: add a queue for jobs
 
-        public DefaultDatabaseConnectionPool(IDatabaseConnectionPoolConfiguration configuration, IDataMapper mapper, Func<IDatabaseConnectionPoolConfiguration, DbConnection> fn)
+        ~DefaultDatabaseConnectionPool() => Dispose(false);
+        public DefaultDatabaseConnectionPool(IDataMapper mapper, int amount, Func<DbConnection> fn)
         {
-            this.configuration = configuration;
             this.mapper = mapper;
             this.connections = new Dictionary<int, DbConnection>();
-            Enumerable.Range(0, configuration.amount - 1).ForAll(n =>
+            Enumerable.Range(0, amount - 1).ForAll(n =>
             {
-                connections[n] = fn.Invoke(configuration);
+                connections[n] = fn.Invoke();
                 connections[n].Open();
             });
         }
@@ -53,8 +53,7 @@ namespace DAL.implementation{
                 int i = 0, max = connections.Count;
                 while (result == null)
                 {
-                    if (i == max - 1) i = 0;
-                    connection = this.connections[i];
+                    connection = this.connections[i >= max ? 0 : i];
                     if (connection.State == ConnectionState.Open)
                     {
                         result = connection;
@@ -73,16 +72,20 @@ namespace DAL.implementation{
 
         protected virtual void Dispose(bool disposing)
         {
-            foreach(DbConnection connection in connections.Values)
+            if (!this._disposed)
             {
-                connection.Close();
+                if (disposing)
+                {
+                    // dispose managed state (managed objects)
+                }
+                // free unmanaged resources
+                foreach(DbConnection connection in connections.Values)
+                {
+                    connection.Close();
+                    connection.Dispose();
+                }
+                this._disposed = true;
             }
         }
-        
-        ~DefaultDatabaseConnectionPool()
-        {
-            Dispose(false);
-        }
-        
     }
 }
