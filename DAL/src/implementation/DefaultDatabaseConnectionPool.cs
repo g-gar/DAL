@@ -53,7 +53,7 @@ namespace DAL.implementation{
                 int i = 0, max = connections.Count;
                 while (result == null)
                 {
-                    connection = this.connections[i >= max ? 0 : i];
+                    connection = this.connections[++i >= max ? 0 : i];
                     if (connection.State == ConnectionState.Open)
                     {
                         result = connection;
